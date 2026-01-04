@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthResult } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
@@ -20,7 +20,7 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   throw new Error("Missing required Google OAuth environment variables");
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const handler = NextAuth({
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -124,3 +124,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/auth/login",
   },
 });
+
+const { handlers, signIn, signOut } = handler;
+const auth: NextAuthResult["auth"] = handler.auth;
+
+export { handlers, signIn, signOut, auth };

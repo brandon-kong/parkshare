@@ -11,7 +11,7 @@ export default function Home() {
       <Typography variant={"h1"} className={"p-20 text-center"}>
         Life doesn't need to be hard
       </Typography>
-      <button type="button" onClick={openLogin}>
+      <button type="button" onClick={() => openLogin()}>
         Login
       </button>
     </div>
