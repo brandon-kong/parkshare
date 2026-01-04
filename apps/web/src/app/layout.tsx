@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { AuthGuard } from "@/components/auth/auth-guard";
+import { AuthProvider } from "@/components/auth/auth-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -24,7 +25,7 @@ export default function RootLayout({
       <body className={`${inter.variable} antialiased`}>
         <SessionProvider>
           <AuthGuard />
-          {children}
+          <AuthProvider>{children}</AuthProvider>
         </SessionProvider>
       </body>
     </html>

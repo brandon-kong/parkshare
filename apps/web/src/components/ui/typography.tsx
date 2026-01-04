@@ -18,7 +18,7 @@ interface TypographyProps extends HTMLAttributes<HTMLElement> {
 }
 
 const variantStyles: Record<TypographyVariant, string> = {
-  h1: "text-4xl font-bold tracking-tight sm:text-5xl",
+  h1: "text-4xl font-bold tracking-tight sm:text-6xl",
   h2: "text-3xl font-semibold tracking-tight",
   h3: "text-2xl font-semibold tracking-tight",
   h4: "text-xl font-semibold tracking-tight",
