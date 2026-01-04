@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import {
   createContext,
   useCallback,
@@ -31,21 +32,44 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [redirectTo, setRedirectTo] = useState<string | undefined>();
   const onSuccessRef = useRef<(() => void | Promise<void>) | null>(null);
 
-  const openLogin = useCallback((options?: OpenAuthOptions) => {
-    onSuccessRef.current = options?.onSuccess ?? null;
-    setRedirectTo(options?.redirectTo);
-    setIsOpen(true);
-  }, []);
+  const openLogin = useCallback(
+    async (options?: OpenAuthOptions) => {
+      // If already authenticated, just run the callback
+      if (status === "authenticated") {
+        if (options?.onSuccess) {
+          await options.onSuccess();
+        }
+        return;
+      }
 
-  const openRegister = useCallback((options?: OpenAuthOptions) => {
-    onSuccessRef.current = options?.onSuccess ?? null;
-    setRedirectTo(options?.redirectTo);
-    setIsOpen(true);
-  }, []);
+      onSuccessRef.current = options?.onSuccess ?? null;
+      setRedirectTo(options?.redirectTo);
+      setIsOpen(true);
+    },
+    [status],
+  );
+
+  const openRegister = useCallback(
+    async (options?: OpenAuthOptions) => {
+      // If already authenticated, just run the callback
+      if (status === "authenticated") {
+        if (options?.onSuccess) {
+          await options.onSuccess();
+        }
+        return;
+      }
+
+      onSuccessRef.current = options?.onSuccess ?? null;
+      setRedirectTo(options?.redirectTo);
+      setIsOpen(true);
+    },
+    [status],
+  );
 
   const close = useCallback(() => {
     setIsOpen(false);
@@ -64,11 +88,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const shouldShowModal = isOpen && status !== "authenticated";
+
   return (
     <AuthContext.Provider value={{ openLogin, openRegister, close }}>
       {children}
       <AuthModal
-        isOpen={isOpen}
+        isOpen={shouldShowModal}
         onClose={close}
         onSuccess={handleSuccess}
         oauthRedirectTo={redirectTo}
