@@ -6,13 +6,14 @@ import (
 )
 
 type User struct {
-	ID				uuid.UUID 	`gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
-	Email			string	  	`gorm:"uniqueIndex;not null"`
-	PasswordHash	string		`gorm:"not null"`
-	Name			string		`gorm:"not null"`
-	AvatarURL		string
-	Phone			string
-	IsVerified		bool		`gorm:"default:false"`
-	CreatedAt		time.Time
-	UpdatedAt		time.Time
+    ID           uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+    Email        string    `gorm:"uniqueIndex;not null" json:"email"`
+    PasswordHash *string   `gorm:"not null" json:"-"`
+    Name         string    `gorm:"not null" json:"name"`
+    AvatarURL    *string   `json:"avatar_url"`
+    Phone        *string   `json:"phone"`
+    IsVerified   bool      `gorm:"default:false" json:"is_verified"`
+    Provider     string    `gorm:"default:'email'" json:"provider"`
+    CreatedAt    time.Time `json:"created_at"`
+    UpdatedAt    time.Time `json:"updated_at"`
 }

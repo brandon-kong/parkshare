@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"time"
+	"net/mail"
 
 	"github.com/brandon-kong/parkshare/apps/api/internal/database"
 	"github.com/brandon-kong/parkshare/apps/api/internal/models"
@@ -114,7 +115,7 @@ func CreateUser(email, password, name string) (*models.User, *TokenPair, error) 
     user := &models.User{
         ID:           uuid.New(),
         Email:        email,
-        PasswordHash: hash,
+        PasswordHash: &hash,
         Name:         name,
         IsVerified:   false,
     }
@@ -139,8 +140,8 @@ func AuthenticateUser(email, password string) (*models.User, *TokenPair, error) 
         return nil, nil, ErrInvalidCredentials
     }
 
-    if !CheckPassword(password, user.PasswordHash) {
-        return nil, nil, ErrInvalidCredentials
+	if user.PasswordHash == nil || !CheckPassword(password, *user.PasswordHash) {
+		return nil, nil, ErrInvalidCredentials
     }
 
     tokens, err := GenerateTokens(user.ID)
@@ -159,4 +160,57 @@ func RefreshTokens(refreshToken string) (*TokenPair, error) {
     }
 
     return GenerateTokens(claims.UserID)
+}
+
+func validateRegister(req RegisterRequest) map[string]string {
+    errors := make(map[string]string)
+
+    if _, err := mail.ParseAddress(req.Email); err != nil {
+        errors["email"] = "Invalid email format"
+    }
+
+    if len(req.Password) < 8 {
+        errors["password"] = "Password must be at least 8 characters"
+    }
+
+    if req.Name == "" {
+        errors["name"] = "Name is required"
+    }
+
+    return errors
+}
+
+// internal/features/auth/service.go
+
+func FindOrCreateOAuthUser(provider, email, name, avatarURL string) (*models.User, *TokenPair, error) {
+    var user models.User
+
+    // Check if user exists
+    err := database.DB.Where("email = ?", email).First(&user).Error
+    if err == nil {
+        // User exists, generate tokens
+        tokens, err := GenerateTokens(user.ID)
+        return &user, tokens, err
+    }
+
+    // Create new user
+    user = models.User{
+        ID:         uuid.New(),
+        Email:      email,
+        Name:       name,
+        AvatarURL:  &avatarURL,
+        Provider:   provider,
+        IsVerified: true,
+    }
+
+    if err := database.DB.Create(&user).Error; err != nil {
+        return nil, nil, err
+    }
+
+    tokens, err := GenerateTokens(user.ID)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    return &user, tokens, nil
 }
