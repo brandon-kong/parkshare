@@ -1,5 +1,6 @@
 import SignOutButton from "@/components/auth/sign-out-button";
-import { auth, signOut } from "@/lib/auth"
+import { spotsApi } from "@/lib/features/spot";
+import { auth, signOut } from "@/lib/features/auth"
 import { redirect } from "next/navigation";
 
 export default async function Dashboard()
@@ -11,9 +12,12 @@ export default async function Dashboard()
         redirect("/auth/login");
     }
 
+    const listSpots = await spotsApi.list();
+
     return (
         <div>
-            Welcome, { session.user.id }
+            Welcome, { session.user.id }. You have { listSpots.length } spots.
+    
             <SignOutButton />
         </div>
     )
