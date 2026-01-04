@@ -25,8 +25,8 @@ func main() {
 	router.Use(middleware.Logger)
 
 	router.Mount("/health", health.Routes())
-	router.Mount("/auth", auth.Routes())
-	
+	router.Mount("/api/v1/auth", auth.Routes())
+
 	if err := http.ListenAndServe(":3000", router); err != nil {
 		log.Fatal(err)
 	}
