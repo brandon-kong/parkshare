@@ -1,9 +1,11 @@
 package database
 
 import (
-	"os"
 	"fmt"
+	"log"
+	"os"
 
+	"github.com/brandon-kong/parkshare/apps/api/internal/features/auth"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -18,6 +20,28 @@ func Connect() error {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 
+	log.Printf("Successfully connected to database\n")
+
+	// Auto migrate
+	if err := migrate(); err != nil {
+		return fmt.Errorf("failed to migrate database: %w", err)
+	}
+
+	log.Printf("Successfully migrated schema\n")
+
 	DB = db
+	return nil
+}
+
+func migrate() error {
+	err := DB.AutoMigrate(
+		&auth.User{},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	log.Println("Migrations complete")
 	return nil
 }

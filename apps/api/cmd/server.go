@@ -19,7 +19,7 @@ func main() {
 	if err := database.Connect(); err != nil {
 		log.Fatal(err)
 	}
-	
+
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 
