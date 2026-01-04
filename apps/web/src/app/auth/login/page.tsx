@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -54,6 +55,10 @@ export default function LoginPage()
             <button onClick={() => signIn("google", { redirectTo: "/dashboard" })}>
                 Sign in with Google
             </button>
+
+            <Link href={'/auth/register'}>
+                Create an account
+            </Link>
         </div>
     )
 }

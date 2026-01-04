@@ -4,6 +4,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { signIn } from "next-auth/react"
+import Link from "next/link"
 
 export default function RegisterPage() {
     const [name, setName] = useState("")
@@ -75,6 +76,10 @@ export default function RegisterPage() {
 
                 <button type="submit">Create account</button>
             </form>
+
+            <Link href={'/auth/login'}>
+                Login
+            </Link>
         </div>
     )
 }

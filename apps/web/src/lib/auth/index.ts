@@ -27,8 +27,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                 const data = await res.json()
 
-                console.log('Login response:', data)  // Debug this
-
                 return {
                     id: data.user,
                     email: data.user.email,
