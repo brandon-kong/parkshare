@@ -21,11 +21,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+	auth.InitOAuth()
+
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 
 	router.Mount("/health", health.Routes())
 	router.Mount("/api/v1/auth", auth.Routes())
+
+	router.Route("/api/v1", func(r chi.Router) {
+		r.Use(auth.Middleware)
+
+		// All routes below require auth
+	})
 
 	if err := http.ListenAndServe(":3000", router); err != nil {
 		log.Fatal(err)

@@ -13,6 +13,7 @@ type User struct {
 	AvatarURL		string
 	Phone			string
 	IsVerified		bool		`gorm:"default:false"`
+	Provider     string    `gorm:"default:'email'"`
 	CreatedAt		time.Time
 	UpdatedAt		time.Time
 }

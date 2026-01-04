@@ -39,6 +39,10 @@ func Routes() chi.Router {
     r.Post("/login", Login)
     r.Post("/refresh", Refresh)
 
+	// Google OAuth
+    r.Get("/google", GoogleLogin)
+    r.Get("/google/callback", GoogleCallback)
+
     return r
 }
 

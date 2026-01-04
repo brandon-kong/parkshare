@@ -23,14 +23,11 @@ func Connect() error {
 	log.Printf("Successfully connected to database\n")
 	
 	DB = db
-	
+
 	// Auto migrate
 	if err := migrate(); err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
-
-	log.Printf("Successfully migrated schema\n")
-
 	
 	return nil
 }
