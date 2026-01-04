@@ -5,14 +5,16 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "format": "biome format --write .",
+    "format:workspace": "turbo run format",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
     "test:api": "pnpm --filter @parking/api test",
     "test:web": "pnpm --filter web test:run"
   },
   "devDependencies": {
-    "prettier": "^3.7.4",
+    "@biomejs/biome": "2.2.0",
+    "@parkshare/biome-config": "workspace:",
     "turbo": "^2.7.2",
     "typescript": "5.9.2"
   },

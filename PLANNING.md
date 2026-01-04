@@ -62,33 +62,39 @@ A peer-to-peer marketplace where people can list and rent parking spots. Think A
 ### Phase 1: Core MVP
 
 **User Management**
+
 - Sign up / login (email + OAuth)
 - User profiles (photo, bio, verification status)
 - Role handling (users can be both hosts and renters)
 
 **Spot Listings**
+
 - Create listing with photos, description, location
 - Set spot attributes (size, covered, EV charging, security features)
 - Define availability (one-time, recurring schedule, always available)
 - Set pricing (hourly, daily, monthly rates)
 
 **Search & Discovery**
+
 - Map-based browsing
 - Search by location with radius
 - Filter by date/time, price, attributes
 - Sort by distance, price, rating
 
 **Booking**
+
 - Check availability for a time range
 - Request or instant book
 - Booking confirmation and calendar sync
 
 **Payments**
+
 - Secure checkout
 - Host payouts
 - Cancellation and refund handling
 
 **Reviews**
+
 - Renters review spots
 - Hosts review renters
 - Rating aggregation
@@ -96,16 +102,19 @@ A peer-to-peer marketplace where people can list and rent parking spots. Think A
 ### Phase 2: Enhanced Experience
 
 **Real-time Features**
+
 - Messaging between host and renter
 - Push notifications (booking confirmed, new message, spot available)
 - Live availability updates
 
 **Smart Pricing (C++ Engine)**
+
 - Demand-based price suggestions
 - Event-aware pricing (concerts, sports games nearby)
 - Competitor analysis
 
 **Advanced Search (C++ Engine)**
+
 - Geospatial indexing for fast queries
 - Walking distance calculation (not just straight-line)
 - Availability conflict resolution
@@ -113,16 +122,19 @@ A peer-to-peer marketplace where people can list and rent parking spots. Think A
 ### Phase 3: Growth & Trust
 
 **Verification**
+
 - Photo verification of spots
 - Identity verification for users
 - Address verification
 
 **Analytics Dashboard**
+
 - Host earnings and occupancy stats
 - Renter spending history
 - Platform-wide metrics (admin)
 
 **Mobile Apps**
+
 - iOS and Android (React Native or native)
 - Navigation integration
 
@@ -131,6 +143,7 @@ A peer-to-peer marketplace where people can list and rent parking spots. Think A
 ## Data Model
 
 ### Users
+
 ```
 User {
   id: UUID
@@ -146,13 +159,14 @@ User {
 ```
 
 ### Spots
+
 ```
 Spot {
   id: UUID
   host_id: UUID -> User
   title: string
   description: string
-  
+
   // Location
   address: string
   city: string
@@ -161,7 +175,7 @@ Spot {
   country: string
   latitude: decimal
   longitude: decimal
-  
+
   // Attributes
   spot_type: enum (driveway, garage, lot, street)
   vehicle_size: enum (compact, standard, large, oversized)
@@ -169,21 +183,22 @@ Spot {
   has_ev_charging: boolean
   has_security: boolean
   access_instructions: string?
-  
+
   // Pricing (cents to avoid float issues)
   hourly_rate: integer?
   daily_rate: integer?
   monthly_rate: integer?
-  
+
   // Status
   status: enum (draft, active, paused, deleted)
-  
+
   created_at: timestamp
   updated_at: timestamp
 }
 ```
 
 ### Spot Photos
+
 ```
 SpotPhoto {
   id: UUID
@@ -195,94 +210,100 @@ SpotPhoto {
 ```
 
 ### Availability
+
 ```
 Availability {
   id: UUID
   spot_id: UUID -> Spot
-  
+
   // For one-time availability
   start_time: timestamp?
   end_time: timestamp?
-  
+
   // For recurring availability
   recurrence_rule: string? (iCal RRULE format)
-  
+
   created_at: timestamp
 }
 ```
 
 ### Bookings
+
 ```
 Booking {
   id: UUID
   spot_id: UUID -> Spot
   renter_id: UUID -> User
-  
+
   start_time: timestamp
   end_time: timestamp
-  
+
   // Pricing snapshot at time of booking
   total_cents: integer
   currency: string
-  
+
   status: enum (pending, confirmed, active, completed, cancelled)
   cancellation_reason: string?
-  
+
   created_at: timestamp
   updated_at: timestamp
 }
 ```
 
 ### Payments
+
 ```
 Payment {
   id: UUID
   booking_id: UUID -> Booking
   payer_id: UUID -> User
-  
+
   amount_cents: integer
   currency: string
   status: enum (pending, completed, refunded, failed)
-  
+
   stripe_payment_id: string?
-  
+
   created_at: timestamp
 }
 ```
 
 ### Payouts
+
 ```
 Payout {
   id: UUID
   host_id: UUID -> User
-  
+
   amount_cents: integer
   currency: string
   status: enum (pending, processing, completed, failed)
-  
+
   stripe_transfer_id: string?
-  
+
   created_at: timestamp
 }
 ```
 
 ### Reviews
+
 ```
 Review {
   id: UUID
   booking_id: UUID -> Booking
   reviewer_id: UUID -> User
   reviewee_id: UUID -> User
-  
+
   rating: integer (1-5)
   comment: string?
   review_type: enum (spot_review, renter_review)
-  
+
   created_at: timestamp
 }
 ```
 
 ### Messages
+
 ```
 Conversation {
   id: UUID
@@ -518,30 +539,30 @@ parkshare/
 
 ## Tech Stack Summary
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | TypeScript, Next.js 14+, Tailwind, Mapbox/Google Maps |
-| API | Go 1.22+, Chi or Echo router, sqlc or GORM |
-| Database | PostgreSQL 16 + PostGIS |
-| Migrations | golang-migrate |
-| Cache | Redis |
-| C++ Engines | CMake, cgo (Go bindings), Emscripten (WASM for browser) |
-| Monorepo | Turborepo (TS), Make (Go/C++) |
-| Testing | Vitest + Playwright (frontend), Go testing + testify (backend), Google Test (C++) |
-| Infrastructure | Docker, GitHub Actions |
+| Layer          | Technology                                                                        |
+| -------------- | --------------------------------------------------------------------------------- |
+| Frontend       | TypeScript, Next.js 14+, Tailwind, Mapbox/Google Maps                             |
+| API            | Go 1.22+, Chi or Echo router, sqlc or GORM                                        |
+| Database       | PostgreSQL 16 + PostGIS                                                           |
+| Migrations     | golang-migrate                                                                    |
+| Cache          | Redis                                                                             |
+| C++ Engines    | CMake, cgo (Go bindings), Emscripten (WASM for browser)                           |
+| Monorepo       | Turborepo (TS), Make (Go/C++)                                                     |
+| Testing        | Vitest + Playwright (frontend), Go testing + testify (backend), Google Test (C++) |
+| Infrastructure | Docker, GitHub Actions                                                            |
 
 ### Go Libraries to Consider
 
-| Purpose | Library |
-|---------|---------|
-| HTTP Router | chi, echo, or gin |
-| Database | pgx (Postgres driver), sqlc (type-safe queries) |
-| Migrations | golang-migrate |
-| Validation | go-playground/validator |
-| Auth/JWT | golang-jwt/jwt |
-| Config | viper or envconfig |
-| Logging | zerolog or zap |
-| Testing | testify, gomock |
+| Purpose     | Library                                         |
+| ----------- | ----------------------------------------------- |
+| HTTP Router | chi, echo, or gin                               |
+| Database    | pgx (Postgres driver), sqlc (type-safe queries) |
+| Migrations  | golang-migrate                                  |
+| Validation  | go-playground/validator                         |
+| Auth/JWT    | golang-jwt/jwt                                  |
+| Config      | viper or envconfig                              |
+| Logging     | zerolog or zap                                  |
+| Testing     | testify, gomock                                 |
 
 ---
 

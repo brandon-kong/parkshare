@@ -47,6 +47,7 @@ make setup
 ```
 
 This will:
+
 - Install Node.js dependencies
 - Create `.env` files from examples
 - Start Postgres and Redis containers

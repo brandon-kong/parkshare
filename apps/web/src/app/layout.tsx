@@ -7,7 +7,7 @@ import { SessionProvider } from "next-auth/react";
 const familjenGrotesk = Familjen_Grotesk({
   variable: "--font-familjen",
   subsets: ["latin"],
-})
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,10 +36,8 @@ export default function RootLayout({
       >
         <SessionProvider>
           <AuthGuard />
-            {children}
+          {children}
         </SessionProvider>
-        
-        
       </body>
     </html>
   );
