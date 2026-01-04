@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Familjen_Grotesk } from "next/font/google";
+import { Familjen_Grotesk, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthGuard } from "@/components/auth/auth-guard";
 import { SessionProvider } from "next-auth/react";
+import { AuthGuard } from "@/components/auth/auth-guard";
 
 const familjenGrotesk = Familjen_Grotesk({
   variable: "--font-familjen",

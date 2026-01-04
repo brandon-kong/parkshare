@@ -1,6 +1,6 @@
-import { serverApi } from "@/lib/api/server";
 import { clientApi } from "@/lib/api/client";
-import { Spot, CreateSpotInput, UpdateSpotInput } from "./types";
+import { serverApi } from "@/lib/api/server";
+import type { CreateSpotInput, Spot, UpdateSpotInput } from "./types";
 
 // For server components
 export const spotsApi = {

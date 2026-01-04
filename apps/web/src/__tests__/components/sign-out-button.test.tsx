@@ -1,14 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 // Mock next-auth/react
 vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
 }));
 
-import SignOutButton from "@/components/auth/sign-out-button";
 import { signOut } from "next-auth/react";
+import SignOutButton from "@/components/auth/sign-out-button";
 
 describe("SignOutButton", () => {
   it("renders a sign out button", () => {
