@@ -24,7 +24,7 @@ export function ProviderLoginButton({ provider }: ProviderLoginButtonProps) {
       onClick={handleClick}
       className={twMerge(
         "border border-black rounded-lg",
-        "w-full p-4 flex items-center",
+        "w-full h-btn px-4 flex items-center",
         "hover:bg-neutral-50",
       )}
     >

@@ -2,6 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { Input } from "../ui/input";
 
 interface LoginFormProps {
   onSuccess: () => void;
@@ -36,7 +37,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <input
+        <Input
+          variant={"accent"}
           type="email"
           placeholder="Email"
           value={email}
@@ -47,7 +49,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       </div>
 
       <div>
-        <input
+        <Input
+          variant={"accent"}
           type="password"
           placeholder="Password"
           value={password}

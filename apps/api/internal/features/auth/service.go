@@ -214,3 +214,18 @@ func FindOrCreateOAuthUser(provider, email, name, avatarURL string) (*models.Use
 
     return &user, tokens, nil
 }
+
+func EmailExists(email string) bool {
+    var user models.User
+    err := database.DB.Where("email = ?", email).First(&user).Error
+    return err == nil
+}
+
+func GetUserByEmail(email string) (*models.User, bool) {
+    var user models.User
+    err := database.DB.Where("email = ?", email).First(&user).Error
+    if err != nil {
+        return nil, false
+    }
+    return &user, true
+}

@@ -7,14 +7,14 @@
   --muted: #f5f5f5;
   --muted-foreground: #737373;
   --border: #e5e5e5;
-  --input: #e5e5e5;
+  --input: #efefef;
   --ring: #171717;
 
   --primary: #171717;
   --primary-foreground: #ffffff;
   --secondary: #f5f5f5;
   --secondary-foreground: #171717;
-  --accent: #f5f5f5;
+  --accent: #d5d5d5;
   --accent-foreground: #171717;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
@@ -26,6 +26,8 @@
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
   --radius-full: 9999px;
+
+  --spacing-btn: 48px;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -59,6 +61,9 @@
   --radius-xl: var(--radius-xl);
   --radius-2xl: var(--radius-2xl);
   --radius-full: var(--radius-full);
+
+  /* Spacing */
+  --height-btn: var(--spacing-btn);
 
   /* Font */
   --font-sans: var(--font-inter);

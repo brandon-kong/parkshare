@@ -45,7 +45,7 @@ export function Modal({ isOpen, onClose, children }: ModalProps) {
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <div
           role="dialog"
-          className="relative bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+          className="relative bg-white rounded-4xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
         >

@@ -9,6 +9,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+type CheckEmailRequest struct {
+    Email string `json:"email"`
+}
+
+type CheckEmailResponse struct {
+    Exists   bool    `json:"exists"`
+    Provider *string `json:"provider,omitempty"`
+}
+
 type OAuthRequest struct {
     Provider  string `json:"provider"`
     Email     string `json:"email"`
@@ -43,12 +52,30 @@ type ErrorResponse struct {
 func Routes() chi.Router {
     r := chi.NewRouter()
 
+    r.Post("/check-email", CheckEmail)
     r.Post("/register", Register)
     r.Post("/login", Login)
     r.Post("/refresh", Refresh)
 	r.Post("/oauth", OAuth)
 
     return r
+}
+
+func CheckEmail(w http.ResponseWriter, r *http.Request) {
+    var req CheckEmailRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        util.WriteError(w, http.StatusBadRequest, "Invalid request body")
+        return
+    }
+
+    user, exists := GetUserByEmail(req.Email)
+    
+    response := CheckEmailResponse{Exists: exists}
+    if exists {
+        response.Provider = &user.Provider
+    }
+    
+    util.WriteJSON(w, http.StatusOK, response)
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
