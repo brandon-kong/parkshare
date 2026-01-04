@@ -26,20 +26,21 @@ describe('LoginPage', () => {
   it('renders login form with all elements', () => {
     render(<LoginPage />)
 
-    expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/password/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /sign in$/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /create an account/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /log in/i })).toBeInTheDocument()
+    expect(screen.getByText(/welcome to parkshare/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^continue$/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /continue with google/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /sign up/i })).toBeInTheDocument()
   })
 
   it('allows user to type in email and password fields', async () => {
     const user = userEvent.setup()
     render(<LoginPage />)
 
-    const emailInput = screen.getByPlaceholderText(/email/i)
-    const passwordInput = screen.getByPlaceholderText(/password/i)
+    const emailInput = screen.getByLabelText(/email/i)
+    const passwordInput = screen.getByLabelText(/password/i)
 
     await user.type(emailInput, 'test@example.com')
     await user.type(passwordInput, 'password123')
@@ -53,9 +54,9 @@ describe('LoginPage', () => {
     const user = userEvent.setup()
     render(<LoginPage />)
 
-    await user.type(screen.getByPlaceholderText(/email/i), 'test@example.com')
-    await user.type(screen.getByPlaceholderText(/password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /sign in$/i }))
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /^continue$/i }))
 
     expect(mockSignIn).toHaveBeenCalledWith('credentials', {
       email: 'test@example.com',
@@ -69,9 +70,9 @@ describe('LoginPage', () => {
     const user = userEvent.setup()
     render(<LoginPage />)
 
-    await user.type(screen.getByPlaceholderText(/email/i), 'test@example.com')
-    await user.type(screen.getByPlaceholderText(/password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /sign in$/i }))
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /^continue$/i }))
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/dashboard')
@@ -83,9 +84,9 @@ describe('LoginPage', () => {
     const user = userEvent.setup()
     render(<LoginPage />)
 
-    await user.type(screen.getByPlaceholderText(/email/i), 'wrong@example.com')
-    await user.type(screen.getByPlaceholderText(/password/i), 'wrongpassword')
-    await user.click(screen.getByRole('button', { name: /sign in$/i }))
+    await user.type(screen.getByLabelText(/email/i), 'wrong@example.com')
+    await user.type(screen.getByLabelText(/password/i), 'wrongpassword')
+    await user.click(screen.getByRole('button', { name: /^continue$/i }))
 
     await waitFor(() => {
       expect(screen.getByText(/invalid email or password/i)).toBeInTheDocument()
@@ -96,7 +97,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup()
     render(<LoginPage />)
 
-    await user.click(screen.getByRole('button', { name: /sign in with google/i }))
+    await user.click(screen.getByRole('button', { name: /continue with google/i }))
 
     expect(mockSignIn).toHaveBeenCalledWith('google', { redirectTo: '/dashboard' })
   })
@@ -104,7 +105,19 @@ describe('LoginPage', () => {
   it('has link to registration page', () => {
     render(<LoginPage />)
 
-    const link = screen.getByRole('link', { name: /create an account/i })
+    const link = screen.getByRole('link', { name: /sign up/i })
     expect(link).toHaveAttribute('href', '/auth/register')
+  })
+
+  it('shows loading state when submitting', async () => {
+    mockSignIn.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({ error: null }), 100)))
+    const user = userEvent.setup()
+    render(<LoginPage />)
+
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /^continue$/i }))
+
+    expect(screen.getByRole('button', { name: /logging in/i })).toBeInTheDocument()
   })
 })
