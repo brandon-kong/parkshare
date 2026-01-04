@@ -9,9 +9,24 @@ import { ProviderLoginButton } from "./provider-login-button";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void | Promise<void>;
+  oauthRedirectTo?: string;
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export function AuthModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  oauthRedirectTo,
+}: AuthModalProps) {
+  const handleSuccess = async () => {
+    if (onSuccess) {
+      await onSuccess();
+    } else {
+      onClose();
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} ariaLabelledBy="auth-modal-title">
       <div className="">
@@ -29,25 +44,24 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <div className="mt-2 p-6 space-y-4">
           <Typography variant="h3">Welcome to ParkShare</Typography>
 
-          <AuthForm onSuccess={onClose} />
+          <AuthForm onSuccess={handleSuccess} />
 
           <div className="flex items-center gap-4 my-6">
             <hr className="flex-1 border-accent" />
-            <span className="text-xs text-foreground">or</span>
+            <Typography variant="small" className="text-xs">
+              or
+            </Typography>
             <hr className="flex-1 border-accent" />
           </div>
 
-          <OAuthButtons />
+          <div className="space-y-3">
+            <ProviderLoginButton
+              provider="google"
+              redirectTo={oauthRedirectTo}
+            />
+          </div>
         </div>
       </div>
     </Modal>
-  );
-}
-
-function OAuthButtons() {
-  return (
-    <div className="space-y-3">
-      <ProviderLoginButton provider="google" />
-    </div>
   );
 }

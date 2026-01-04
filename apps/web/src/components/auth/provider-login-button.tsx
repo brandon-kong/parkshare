@@ -3,38 +3,44 @@
 import { GoogleIcon } from "brand-logos";
 import type { ProviderId } from "next-auth/providers";
 import { signIn } from "next-auth/react";
-import { twMerge } from "tailwind-merge";
+import { useState } from "react";
 import { capitalize } from "@/utils/string";
+import { Button } from "../ui/button";
 import { Typography } from "../ui/typography";
 
 interface ProviderLoginButtonProps {
   provider: ProviderId;
+  redirectTo?: string;
 }
 
-export function ProviderLoginButton({ provider }: ProviderLoginButtonProps) {
-  const handleClick = () => {
-    signIn(provider, {
-      redirectTo: "/dashboard",
+export function ProviderLoginButton({
+  provider,
+  redirectTo = "/dashboard",
+}: ProviderLoginButtonProps) {
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = async () => {
+    setLoading(true);
+    await signIn(provider, {
+      redirectTo,
     });
   };
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
       onClick={handleClick}
-      className={twMerge(
-        "border border-black rounded-lg",
-        "w-full h-btn px-4 flex items-center",
-        "hover:bg-neutral-50",
-      )}
+      loading={loading}
+      className="w-full border border-foreground relative"
     >
-      <GoogleIcon />
-      <Typography
-        variant={"small"}
-        className={"font-semibold absolute left-1/2 -translate-x-1/2"}
-      >
-        Continue with {capitalize(provider)}
+      {!loading && (
+        <span className="absolute left-4">
+          <GoogleIcon />
+        </span>
+      )}
+      <Typography variant="small" className="font-semibold">
+        {loading ? "Redirecting..." : `Continue with ${capitalize(provider)}`}
       </Typography>
-    </button>
+    </Button>
   );
 }

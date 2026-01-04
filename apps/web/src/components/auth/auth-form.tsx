@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { Typography } from "../ui/typography";
 
 type AuthStep = "email" | "password" | "register" | "oauth-conflict";
 
@@ -153,9 +154,14 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         />
 
         {error && (
-          <p className="text-destructive text-sm" role="alert">
+          <Typography
+            variant="small"
+            className="text-destructive"
+            as="p"
+            role="alert"
+          >
             {error}
-          </p>
+          </Typography>
         )}
 
         <Button type="submit" loading={loading} className="w-full">
@@ -178,10 +184,10 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           Back
         </Button>
 
-        <div className="text-sm text-muted-foreground">
+        <Typography variant="muted">
           Logging in as{" "}
           <span className="font-medium text-foreground">{email}</span>
-        </div>
+        </Typography>
 
         <Input
           variant="accent"
@@ -194,9 +200,14 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         />
 
         {error && (
-          <p className="text-destructive text-sm" role="alert">
+          <Typography
+            variant="small"
+            className="text-destructive"
+            as="p"
+            role="alert"
+          >
             {error}
-          </p>
+          </Typography>
         )}
 
         <Button type="submit" loading={loading} className="w-full">
@@ -219,10 +230,10 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           Back
         </Button>
 
-        <div className="text-sm text-muted-foreground">
+        <Typography variant="muted">
           Creating account for{" "}
           <span className="font-medium text-foreground">{email}</span>
-        </div>
+        </Typography>
 
         <Input
           variant="accent"
@@ -244,18 +255,23 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         />
 
         {error && (
-          <p className="text-destructive text-sm" role="alert">
+          <Typography
+            variant="small"
+            className="text-destructive"
+            as="p"
+            role="alert"
+          >
             {error}
-          </p>
+          </Typography>
         )}
 
         <Button type="submit" loading={loading} className="w-full">
           {loading ? "Creating account..." : "Create account"}
         </Button>
 
-        <p className="text-xs text-muted-foreground">
+        <Typography variant="muted" className="text-xs">
           By signing up, you agree to our Terms of Service and Privacy Policy.
-        </p>
+        </Typography>
       </form>
     );
   }
@@ -274,17 +290,17 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         </Button>
 
         <div className="text-center space-y-2">
-          <p className="text-sm">
+          <Typography variant="small">
             The email <span className="font-medium">{email}</span> is already
             associated with a{" "}
             <span className="font-medium">
               {formatProvider(oauthProvider ?? "")}
             </span>{" "}
             account.
-          </p>
-          <p className="text-sm text-muted-foreground">
+          </Typography>
+          <Typography variant="muted">
             Please sign in using {formatProvider(oauthProvider ?? "")} below.
-          </p>
+          </Typography>
         </div>
       </div>
     );

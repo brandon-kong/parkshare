@@ -1,13 +1,22 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+} from "react";
 import { AuthModal } from "./auth-modal";
 
-type AuthMode = "login" | "register";
+interface OpenAuthOptions {
+  onSuccess?: () => void | Promise<void>;
+  redirectTo?: string; // For OAuth flows that redirect away
+}
 
 interface AuthContextType {
-  openLogin: () => void;
-  openRegister: () => void;
+  openLogin: (options?: OpenAuthOptions) => void;
+  openRegister: (options?: OpenAuthOptions) => void;
   close: () => void;
 }
 
@@ -23,26 +32,47 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [mode, setMode] = useState<AuthMode>("login");
+  const [redirectTo, setRedirectTo] = useState<string | undefined>();
+  const onSuccessRef = useRef<(() => void | Promise<void>) | null>(null);
 
-  const openLogin = useCallback(() => {
-    setMode("login");
+  const openLogin = useCallback((options?: OpenAuthOptions) => {
+    onSuccessRef.current = options?.onSuccess ?? null;
+    setRedirectTo(options?.redirectTo);
     setIsOpen(true);
   }, []);
 
-  const openRegister = useCallback(() => {
-    setMode("register");
+  const openRegister = useCallback((options?: OpenAuthOptions) => {
+    onSuccessRef.current = options?.onSuccess ?? null;
+    setRedirectTo(options?.redirectTo);
     setIsOpen(true);
   }, []);
 
   const close = useCallback(() => {
     setIsOpen(false);
+    setRedirectTo(undefined);
+    onSuccessRef.current = null;
+  }, []);
+
+  const handleSuccess = useCallback(async () => {
+    const callback = onSuccessRef.current;
+    setIsOpen(false);
+    setRedirectTo(undefined);
+    onSuccessRef.current = null;
+
+    if (callback) {
+      await callback();
+    }
   }, []);
 
   return (
     <AuthContext.Provider value={{ openLogin, openRegister, close }}>
       {children}
-      <AuthModal isOpen={isOpen} onClose={close} defaultMode={mode} />
+      <AuthModal
+        isOpen={isOpen}
+        onClose={close}
+        onSuccess={handleSuccess}
+        oauthRedirectTo={redirectTo}
+      />
     </AuthContext.Provider>
   );
 }
