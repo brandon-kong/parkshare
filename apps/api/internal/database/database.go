@@ -35,6 +35,8 @@ func Connect() error {
 func migrate() error {
 	err := DB.AutoMigrate(
 		&models.User{},
+		&models.Spot{},
+		&models.SpotPhoto{},
 	)
 
 	if err != nil {

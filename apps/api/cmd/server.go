@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
-	"os"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-chi/cors"
@@ -12,6 +12,7 @@ import (
 	"github.com/brandon-kong/parkshare/apps/api/internal/database"
 	"github.com/brandon-kong/parkshare/apps/api/internal/features/auth"
 	"github.com/brandon-kong/parkshare/apps/api/internal/features/health"
+	"github.com/brandon-kong/parkshare/apps/api/internal/features/spot"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -52,6 +53,7 @@ func main() {
 		r.Use(auth.Middleware)
 
 		// All routes below require auth
+		r.Mount("/spots", spot.Routes())
 	})
 
 	if err := http.ListenAndServe(":5000", router); err != nil {
