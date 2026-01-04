@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/brandon-kong/parkshare/apps/api/internal/features/auth"
+	"github.com/brandon-kong/parkshare/apps/api/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -21,7 +21,9 @@ func Connect() error {
 	}
 
 	log.Printf("Successfully connected to database\n")
-
+	
+	DB = db
+	
 	// Auto migrate
 	if err := migrate(); err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
@@ -29,13 +31,13 @@ func Connect() error {
 
 	log.Printf("Successfully migrated schema\n")
 
-	DB = db
+	
 	return nil
 }
 
 func migrate() error {
 	err := DB.AutoMigrate(
-		&auth.User{},
+		&models.User{},
 	)
 
 	if err != nil {

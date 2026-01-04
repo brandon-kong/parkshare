@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/brandon-kong/parkshare/apps/api/internal/database"
+	"github.com/brandon-kong/parkshare/apps/api/internal/features/auth"
 	"github.com/brandon-kong/parkshare/apps/api/internal/features/health"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -24,6 +25,8 @@ func main() {
 	router.Use(middleware.Logger)
 
 	router.Mount("/health", health.Routes())
+	router.Mount("/auth", auth.Routes())
+	
 	if err := http.ListenAndServe(":3000", router); err != nil {
 		log.Fatal(err)
 	}
