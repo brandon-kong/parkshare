@@ -26,8 +26,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	auth.InitOAuth()
-
 	router := chi.NewRouter()
 
 	// Middleware

@@ -179,3 +179,38 @@ func validateRegister(req RegisterRequest) map[string]string {
 
     return errors
 }
+
+// internal/features/auth/service.go
+
+func FindOrCreateOAuthUser(provider, email, name, avatarURL string) (*models.User, *TokenPair, error) {
+    var user models.User
+
+    // Check if user exists
+    err := database.DB.Where("email = ?", email).First(&user).Error
+    if err == nil {
+        // User exists, generate tokens
+        tokens, err := GenerateTokens(user.ID)
+        return &user, tokens, err
+    }
+
+    // Create new user
+    user = models.User{
+        ID:         uuid.New(),
+        Email:      email,
+        Name:       name,
+        AvatarURL:  avatarURL,
+        Provider:   provider,
+        IsVerified: true,
+    }
+
+    if err := database.DB.Create(&user).Error; err != nil {
+        return nil, nil, err
+    }
+
+    tokens, err := GenerateTokens(user.ID)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    return &user, tokens, nil
+}

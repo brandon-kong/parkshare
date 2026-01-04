@@ -8,6 +8,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+type OAuthRequest struct {
+    Provider  string `json:"provider"`
+    Email     string `json:"email"`
+    Name      string `json:"name"`
+    AvatarURL string `json:"avatar_url"`
+}
+
 type RegisterRequest struct {
     Email    string `json:"email"`
     Password string `json:"password"`
@@ -38,10 +45,7 @@ func Routes() chi.Router {
     r.Post("/register", Register)
     r.Post("/login", Login)
     r.Post("/refresh", Refresh)
-
-	// Google OAuth
-    r.Get("/google", GoogleLogin)
-    r.Get("/google/callback", GoogleCallback)
+	r.Post("/oauth", OAuth)
 
     return r
 }
@@ -108,6 +112,22 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
     }
 
     writeJSON(w, http.StatusOK, tokens)
+}
+
+func OAuth(w http.ResponseWriter, r *http.Request) {
+    var req OAuthRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        writeError(w, http.StatusBadRequest, "Invalid request body")
+        return
+    }
+
+    user, tokens, err := FindOrCreateOAuthUser(req.Provider, req.Email, req.Name, req.AvatarURL)
+    if err != nil {
+        writeError(w, http.StatusInternalServerError, "Failed to authenticate")
+        return
+    }
+
+    writeJSON(w, http.StatusOK, AuthResponse{User: user, Tokens: tokens})
 }
 
 // Helper functions
