@@ -1,4 +1,5 @@
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
+import { Spinner } from "./spinner";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
 type ButtonSize = "default" | "sm" | "lg" | "icon";
@@ -63,10 +64,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? (
-          <span
-            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-            aria-hidden="true"
-          />
+          <Spinner size="md" />
         ) : startIcon ? (
           <span aria-hidden="true">{startIcon}</span>
         ) : null}
