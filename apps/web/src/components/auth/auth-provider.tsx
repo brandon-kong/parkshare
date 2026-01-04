@@ -16,8 +16,7 @@ interface OpenAuthOptions {
 }
 
 interface AuthContextType {
-  openLogin: (options?: OpenAuthOptions) => void;
-  openRegister: (options?: OpenAuthOptions) => void;
+  openAuth: (options?: OpenAuthOptions) => void;
   close: () => void;
 }
 
@@ -37,24 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [redirectTo, setRedirectTo] = useState<string | undefined>();
   const onSuccessRef = useRef<(() => void | Promise<void>) | null>(null);
 
-  const openLogin = useCallback(
-    async (options?: OpenAuthOptions) => {
-      // If already authenticated, just run the callback
-      if (status === "authenticated") {
-        if (options?.onSuccess) {
-          await options.onSuccess();
-        }
-        return;
-      }
-
-      onSuccessRef.current = options?.onSuccess ?? null;
-      setRedirectTo(options?.redirectTo);
-      setIsOpen(true);
-    },
-    [status],
-  );
-
-  const openRegister = useCallback(
+  const openAuth = useCallback(
     async (options?: OpenAuthOptions) => {
       // If already authenticated, just run the callback
       if (status === "authenticated") {
@@ -91,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const shouldShowModal = isOpen && status !== "authenticated";
 
   return (
-    <AuthContext.Provider value={{ openLogin, openRegister, close }}>
+    <AuthContext.Provider value={{ openAuth, close }}>
       {children}
       <AuthModal
         isOpen={shouldShowModal}

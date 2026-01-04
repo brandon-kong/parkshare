@@ -26,6 +26,7 @@
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
   --radius-full: 9999px;
+  --radius-control: var(--radius-full); /* Used for buttons, inputs, etc. */
 
   --spacing-btn: 48px;
 
@@ -62,6 +63,7 @@
   --radius-xl: var(--radius-xl);
   --radius-2xl: var(--radius-2xl);
   --radius-full: var(--radius-full);
+  --radius-control: var(--radius-control);
 
   /* Spacing */
   --height-btn: var(--spacing-btn);

@@ -90,7 +90,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             aria-describedby={describedByIds || undefined}
             aria-required={required}
             className={`
-              flex h-btn w-full rounded-lg border px-3 py-2
+              flex h-btn w-full rounded-control border px-5 py-2
               text-base transition-colors
               file:border-0 file:bg-transparent file:text-sm file:font-medium
               placeholder:text-muted-foreground
