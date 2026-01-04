@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
-    "@parkshare/biome-config": "workspace:",
+    "@parkshare/biome-config": "workspace:*",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "turbo": "^2.7.2",

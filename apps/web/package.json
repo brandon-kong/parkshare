@@ -17,8 +17,8 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
-    "@parkshare/tsconfig": "workspace:",
-    "@parkshare/biome-config": "workspace:",
+    "@parkshare/tsconfig": "workspace:*",
+    "@parkshare/biome-config": "workspace:*",
     "@biomejs/biome": "2.2.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",

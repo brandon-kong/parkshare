@@ -5,7 +5,8 @@
       "Bash(go test:*)",
       "Bash(pnpm add:*)",
       "Bash(pnpm test:run:*)",
-      "Bash(pnpm turbo test:*)"
+      "Bash(pnpm turbo test:*)",
+      "Bash(rm:*)"
     ]
   }
 }
