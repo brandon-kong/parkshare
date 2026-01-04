@@ -43,6 +43,14 @@ func migrate() error {
 		return err
 	}
 
+	// Data migration: update provider "email" to "credentials"
+	result := DB.Model(&models.User{}).Where("provider = ?", "email").Update("provider", "credentials")
+	if result.Error != nil {
+		log.Printf("Warning: failed to migrate provider field: %v", result.Error)
+	} else if result.RowsAffected > 0 {
+		log.Printf("Migrated %d users from provider 'email' to 'credentials'", result.RowsAffected)
+	}
+
 	log.Println("Migrations complete")
 	return nil
 }

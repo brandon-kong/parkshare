@@ -13,7 +13,7 @@ type User struct {
     AvatarURL    *string   `json:"avatar_url"`
     Phone        *string   `json:"phone"`
     IsVerified   bool      `gorm:"default:false" json:"is_verified"`
-    Provider     string    `gorm:"default:'email'" json:"provider"`
+    Provider     string    `gorm:"default:'credentials'" json:"provider"`
     CreatedAt    time.Time `json:"created_at"`
     UpdatedAt    time.Time `json:"updated_at"`
 }

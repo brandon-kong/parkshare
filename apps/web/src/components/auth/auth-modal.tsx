@@ -1,54 +1,35 @@
 "use client";
 
-import { X } from "lucide-react";
-import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
+import { CloseButton } from "../ui/close-button";
 import { Typography } from "../ui/typography";
-import { LoginForm } from "./login-form";
+import { AuthForm } from "./auth-form";
 import { ProviderLoginButton } from "./provider-login-button";
-import { RegisterForm } from "./register-form";
-
-type AuthMode = "login" | "register";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  defaultMode?: AuthMode;
 }
 
-export function AuthModal({
-  isOpen,
-  onClose,
-  defaultMode = "login",
-}: AuthModalProps) {
-  const [mode, setMode] = useState<AuthMode>(defaultMode);
-
+export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} ariaLabelledBy="auth-modal-title">
       <div className="">
         {/* Header */}
         <div className="flex items-center justify-between p-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
-          >
-            <X size={20} />
-          </button>
-          <Typography variant={"h4"}>Log in or sign up</Typography>
-          <div className="w-9" />
+          <CloseButton onClick={onClose} />
+          <Typography variant="h4" id="auth-modal-title">
+            Log in or sign up
+          </Typography>
+          <div className="w-10" aria-hidden="true" />
         </div>
 
         <hr className="border-accent" />
 
-        <div className={"mt-2 p-6 space-y-4"}>
-          <Typography variant={"h3"}>Welcome to parkshare</Typography>
+        <div className="mt-2 p-6 space-y-4">
+          <Typography variant="h3">Welcome to ParkShare</Typography>
 
-          {mode === "login" ? (
-            <LoginForm onSuccess={onClose} />
-          ) : (
-            <RegisterForm onSuccess={() => setMode("login")} />
-          )}
+          <AuthForm onSuccess={onClose} />
 
           <div className="flex items-center gap-4 my-6">
             <hr className="flex-1 border-accent" />
@@ -57,32 +38,6 @@ export function AuthModal({
           </div>
 
           <OAuthButtons />
-
-          <p className="text-center text-sm mt-6">
-            {mode === "login" ? (
-              <>
-                Don't have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => setMode("register")}
-                  className="font-semibold underline"
-                >
-                  Sign up
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => setMode("login")}
-                  className="font-semibold underline"
-                >
-                  Log in
-                </button>
-              </>
-            )}
-          </p>
         </div>
       </div>
     </Modal>
