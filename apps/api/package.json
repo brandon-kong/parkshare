@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "modd",
+    "dev": "air -c air.toml",
     "test": "go env -w GOCACHE=C:/temp/go-cache && go test ./internal/... -v"
   },
   "keywords": [],
