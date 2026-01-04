@@ -53,11 +53,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Basic validation
-    if req.Email == "" || req.Password == "" || req.Name == "" {
-        writeError(w, http.StatusBadRequest, "Email, password, and name are required")
-        return
-    }
+	if errs := validateRegister(req); len(errs) > 0 {
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{
+			"error": "Validation failed",
+			"fields": errs,
+		})
+		return
+	}
 
     user, tokens, err := CreateUser(req.Email, req.Password, req.Name)
     if err != nil {

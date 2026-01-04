@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"time"
+	"net/mail"
 
 	"github.com/brandon-kong/parkshare/apps/api/internal/database"
 	"github.com/brandon-kong/parkshare/apps/api/internal/models"
@@ -159,4 +160,22 @@ func RefreshTokens(refreshToken string) (*TokenPair, error) {
     }
 
     return GenerateTokens(claims.UserID)
+}
+
+func validateRegister(req RegisterRequest) map[string]string {
+    errors := make(map[string]string)
+
+    if _, err := mail.ParseAddress(req.Email); err != nil {
+        errors["email"] = "Invalid email format"
+    }
+
+    if len(req.Password) < 8 {
+        errors["password"] = "Password must be at least 8 characters"
+    }
+
+    if req.Name == "" {
+        errors["name"] = "Name is required"
+    }
+
+    return errors
 }
