@@ -55,7 +55,7 @@ func main() {
 		// All routes below require auth
 		r.Mount("/spots", spot.Routes())
 	})
-
+	
 	if err := http.ListenAndServe(":5000", router); err != nil {
 		log.Fatal(err)
 	}
