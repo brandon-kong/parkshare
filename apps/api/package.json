@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "air -c air.toml",
+    "lint": "golangci-lint run",
     "test": "go env -w GOCACHE=C:/temp/go-cache && go test ./internal/... -v"
   },
   "keywords": [],
