@@ -29,7 +29,8 @@ func main() {
 	router := chi.NewRouter()
 
 	// Middleware
-	if useCors := os.Getenv("DATABASE_URL"); useCors == "true" {
+	if useCors := os.Getenv("USE_CORS"); useCors == "true" {
+		log.Printf("Using CORS\n")
 		router.Use(cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"http://localhost:3000"},
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},

@@ -115,7 +115,7 @@ func CreateUser(email, password, name string) (*models.User, *TokenPair, error) 
     user := &models.User{
         ID:           uuid.New(),
         Email:        email,
-        PasswordHash: hash,
+        PasswordHash: &hash,
         Name:         name,
         IsVerified:   false,
     }
@@ -140,8 +140,8 @@ func AuthenticateUser(email, password string) (*models.User, *TokenPair, error) 
         return nil, nil, ErrInvalidCredentials
     }
 
-    if !CheckPassword(password, user.PasswordHash) {
-        return nil, nil, ErrInvalidCredentials
+	if user.PasswordHash == nil || !CheckPassword(password, *user.PasswordHash) {
+		return nil, nil, ErrInvalidCredentials
     }
 
     tokens, err := GenerateTokens(user.ID)
@@ -198,7 +198,7 @@ func FindOrCreateOAuthUser(provider, email, name, avatarURL string) (*models.Use
         ID:         uuid.New(),
         Email:      email,
         Name:       name,
-        AvatarURL:  avatarURL,
+        AvatarURL:  &avatarURL,
         Provider:   provider,
         IsVerified: true,
     }
