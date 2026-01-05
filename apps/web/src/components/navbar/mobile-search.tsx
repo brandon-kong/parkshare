@@ -1,26 +1,52 @@
 "use client";
 
-import { Calendar, Clock, MapPin, Search, X } from "lucide-react";
+import { Navigation, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import {
+  LocationAutocomplete,
+  type LocationResult,
+} from "../ui/location-autocomplete";
 
 interface SearchState {
   location: string;
-  date: string;
-  duration: string;
+  coordinates: { longitude: number; latitude: number } | null;
 }
 
 export function MobileSearch() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchState, setSearchState] = useState<SearchState>({
     location: "",
-    date: "",
-    duration: "",
+    coordinates: null,
   });
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Fetch user's approximate location on mount
+  useEffect(() => {
+    async function fetchLocation() {
+      try {
+        // First get client's public IP using a CORS-friendly service
+        const ipResponse = await fetch("https://api.ipify.org?format=json");
+        const { ip } = await ipResponse.json();
+
+        // Then pass IP to our API route which calls ipinfo.io
+        const response = await fetch(`/api/location?ip=${ip}`);
+        const data = await response.json();
+
+        if (data.formatted && data.latitude && data.longitude) {
+          setSearchState({
+            location: data.formatted,
+            coordinates: { latitude: data.latitude, longitude: data.longitude },
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch location:", error);
+      }
+    }
+    fetchLocation();
+  }, []);
 
   // Prevent body scroll when expanded
   useEffect(() => {
@@ -35,16 +61,72 @@ export function MobileSearch() {
   const handleSearch = useCallback(() => {
     const params = new URLSearchParams();
     if (searchState.location) params.set("location", searchState.location);
-    if (searchState.date) params.set("date", searchState.date);
-    if (searchState.duration) params.set("duration", searchState.duration);
+    if (searchState.coordinates) {
+      params.set("lat", searchState.coordinates.latitude.toString());
+      params.set("lng", searchState.coordinates.longitude.toString());
+    }
 
     const queryString = params.toString();
     router.push(`/search${queryString ? `?${queryString}` : ""}`);
     setIsExpanded(false);
   }, [searchState, router]);
 
-  const hasSearchValues =
-    searchState.location || searchState.date || searchState.duration;
+  const handleLocationSelect = useCallback((location: LocationResult) => {
+    setSearchState({
+      location: location.fullAddress,
+      coordinates: location.coordinates,
+    });
+  }, []);
+
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleNearbyClick = useCallback(async () => {
+    if (!navigator.geolocation) {
+      console.warn("Geolocation not supported");
+      return;
+    }
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+        if (token) {
+          try {
+            const response = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${token}&types=place,locality,neighborhood`,
+            );
+            const data = await response.json();
+            const place = data.features?.[0];
+
+            setSearchState({
+              location: place?.place_name || "Current location",
+              coordinates: { longitude, latitude },
+            });
+          } catch {
+            setSearchState({
+              location: "Current location",
+              coordinates: { longitude, latitude },
+            });
+          }
+        } else {
+          setSearchState({
+            location: "Current location",
+            coordinates: { longitude, latitude },
+          });
+        }
+
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }, []);
 
   // Collapsed state
   if (!isExpanded) {
@@ -57,14 +139,7 @@ export function MobileSearch() {
       >
         <div className="flex-1 text-left">
           <p className="text-sm font-medium">
-            {hasSearchValues ? searchState.location || "Anywhere" : "Where to?"}
-          </p>
-          <p className="text-xs text-muted-foreground font-normal">
-            {hasSearchValues
-              ? [searchState.date, searchState.duration]
-                  .filter(Boolean)
-                  .join(" · ") || "Any time"
-              : "Any time · Any duration"}
+            {searchState.location || "Where do you need parking?"}
           </p>
         </div>
       </Button>
@@ -85,81 +160,37 @@ export function MobileSearch() {
           >
             <X size={20} />
           </Button>
-          <span className="font-semibold">Search parking</span>
+          <span className="font-semibold">Find parking</span>
           <div className="w-10" />
         </div>
 
         {/* Search fields */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {/* Location */}
-          <Input
-            label="Where"
-            placeholder="Enter address, city, or venue"
-            value={searchState.location}
-            onChange={(e) =>
-              setSearchState((s) => ({ ...s, location: e.target.value }))
-            }
-            startIcon={<MapPin size={18} />}
-            variant="accent"
-          />
-
-          {/* Date */}
-          <div className="space-y-2">
-            <Input
-              label="When"
-              placeholder="Today, Tomorrow, or specific date"
-              value={searchState.date}
-              onChange={(e) =>
-                setSearchState((s) => ({ ...s, date: e.target.value }))
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="space-y-3">
+            <LocationAutocomplete
+              label="Where do you need parking?"
+              placeholder="Enter address, city, or venue"
+              value={searchState.location}
+              onChange={(value) =>
+                setSearchState((s) => ({ ...s, location: value }))
               }
-              startIcon={<Calendar size={18} />}
+              onSelect={handleLocationSelect}
               variant="accent"
             />
-            <div className="flex gap-2 flex-wrap">
-              {["Today", "Tomorrow", "This weekend"].map((option) => (
-                <Button
-                  key={option}
-                  variant={
-                    searchState.date === option ? "primary" : "secondary"
-                  }
-                  size="sm"
-                  onClick={() =>
-                    setSearchState((s) => ({ ...s, date: option }))
-                  }
-                >
-                  {option}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Duration */}
-          <div className="space-y-2">
-            <Input
-              label="Duration"
-              placeholder="e.g., 2 hours, All day"
-              value={searchState.duration}
-              onChange={(e) =>
-                setSearchState((s) => ({ ...s, duration: e.target.value }))
-              }
-              startIcon={<Clock size={18} />}
-              variant="accent"
-            />
-            <div className="flex gap-2 flex-wrap">
-              {["1 hour", "2 hours", "4 hours", "All day"].map((option) => (
-                <Button
-                  key={option}
-                  variant={
-                    searchState.duration === option ? "primary" : "secondary"
-                  }
-                  size="sm"
-                  onClick={() =>
-                    setSearchState((s) => ({ ...s, duration: option }))
-                  }
-                >
-                  {option}
-                </Button>
-              ))}
+            <div className="flex gap-2">
+              <Button
+                variant={
+                  searchState.location === "Current location"
+                    ? "primary"
+                    : "secondary"
+                }
+                size="sm"
+                onClick={handleNearbyClick}
+                loading={isLocating}
+                startIcon={<Navigation size={14} />}
+              >
+                Nearby
+              </Button>
             </div>
           </div>
         </div>

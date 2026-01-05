@@ -1,23 +1,17 @@
 "use client";
 
-import { Calendar, Clock, MapPin, Search } from "lucide-react";
+import { Navigation, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  type KeyboardEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-
-type SearchTab = "location" | "date" | "duration";
+import {
+  LocationAutocomplete,
+  type LocationResult,
+} from "../ui/location-autocomplete";
 
 interface SearchState {
   location: string;
-  date: string;
-  duration: string;
+  coordinates: { longitude: number; latitude: number } | null;
 }
 
 interface ExpandableSearchProps {
@@ -28,19 +22,38 @@ export function ExpandableSearch({
   isScrolled = false,
 }: ExpandableSearchProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState<SearchTab>("location");
   const [searchState, setSearchState] = useState<SearchState>({
     location: "",
-    date: "",
-    duration: "",
+    coordinates: null,
   });
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRefs = useRef<Record<SearchTab, HTMLInputElement | null>>({
-    location: null,
-    date: null,
-    duration: null,
-  });
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
+
+  // Fetch user's approximate location on mount
+  useEffect(() => {
+    async function fetchLocation() {
+      try {
+        // First get client's public IP using a CORS-friendly service
+        const ipResponse = await fetch("https://api.ipify.org?format=json");
+        const { ip } = await ipResponse.json();
+
+        // Then pass IP to our API route which calls ipinfo.io
+        const response = await fetch(`/api/location?ip=${ip}`);
+        const data = await response.json();
+
+        if (data.formatted && data.latitude && data.longitude) {
+          setSearchState({
+            location: data.formatted,
+            coordinates: { latitude: data.latitude, longitude: data.longitude },
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch location:", error);
+      }
+    }
+    fetchLocation();
+  }, []);
 
   // Click outside to close
   useEffect(() => {
@@ -60,53 +73,99 @@ export function ExpandableSearch({
     }
   }, [isExpanded]);
 
-  // Focus input when tab changes or when expanded
+  // Focus input when expanded
   useEffect(() => {
-    if (isExpanded && inputRefs.current[activeTab]) {
+    if (isExpanded && inputRef.current) {
       setTimeout(() => {
-        inputRefs.current[activeTab]?.focus();
+        inputRef.current?.focus();
       }, 50);
     }
-  }, [activeTab, isExpanded]);
+  }, [isExpanded]);
 
-  const handleExpand = useCallback((tab: SearchTab = "location") => {
+  const handleExpand = useCallback(() => {
     setIsExpanded(true);
-    setActiveTab(tab);
   }, []);
 
   const handleSearch = useCallback(() => {
     const params = new URLSearchParams();
     if (searchState.location) params.set("location", searchState.location);
-    if (searchState.date) params.set("date", searchState.date);
-    if (searchState.duration) params.set("duration", searchState.duration);
+    if (searchState.coordinates) {
+      params.set("lat", searchState.coordinates.latitude.toString());
+      params.set("lng", searchState.coordinates.longitude.toString());
+    }
 
     const queryString = params.toString();
-    router.push(`/search${queryString ? `?${queryString}` : ""}`);
+    router.push(`/s/spots${queryString ? `?${queryString}` : ""}`);
     setIsExpanded(false);
   }, [searchState, router]);
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    } else if (e.key === "Escape") {
-      setIsExpanded(false);
-    } else if (e.key === "Tab" && !e.shiftKey) {
-      e.preventDefault();
-      const tabs: SearchTab[] = ["location", "date", "duration"];
-      const currentIndex = tabs.indexOf(activeTab);
-      const nextIndex = (currentIndex + 1) % tabs.length;
-      const nextTab = tabs[nextIndex];
-      if (nextTab) {
-        setActiveTab(nextTab);
-      }
+  const handleLocationSelect = useCallback((location: LocationResult) => {
+    setSearchState({
+      location: location.fullAddress,
+      coordinates: location.coordinates,
+    });
+  }, []);
+
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleNearbyClick = useCallback(async () => {
+    if (!navigator.geolocation) {
+      console.warn("Geolocation not supported");
+      return;
     }
-  };
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+        if (token) {
+          try {
+            const response = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${token}&types=place,locality,neighborhood`,
+            );
+            const data = await response.json();
+            const place = data.features?.[0];
+
+            setSearchState({
+              location: place?.place_name || "Current location",
+              coordinates: { longitude, latitude },
+            });
+          } catch {
+            setSearchState({
+              location: "Current location",
+              coordinates: { longitude, latitude },
+            });
+          }
+        } else {
+          setSearchState({
+            location: "Current location",
+            coordinates: { longitude, latitude },
+          });
+        }
+
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }, []);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative w-full max-w-md">
       {/* Collapsed state - Search bar */}
-      <search
-        className={`group flex items-center gap-2 bg-background border border-border rounded-full shadow-sm cursor-pointer transition-all duration-300 ease-out hover:shadow-md ${isScrolled ? "h-10 px-2" : "h-12 px-3"} ${isExpanded ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+      <button
+        type="button"
+        tabIndex={isExpanded ? -1 : 0}
+        aria-label="Search for parking"
+        aria-expanded={isExpanded}
+        onClick={handleExpand}
+        className={`group flex items-center gap-2 bg-background border border-border rounded-full shadow-sm cursor-pointer transition-all duration-300 ease-out hover:shadow-md w-full text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${isScrolled ? "h-10 px-2" : "h-12 px-3"} ${isExpanded ? "opacity-0 pointer-events-none" : "opacity-100"}`}
       >
         {/* Search icon */}
         <div
@@ -115,173 +174,68 @@ export function ExpandableSearch({
           <Search size={isScrolled ? 16 : 18} />
         </div>
 
-        {/* Pills */}
-        <div className="flex-1 flex items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleExpand("location")}
-            className={`h-auto py-1 px-2 font-medium hover:bg-transparent hover:text-primary ${searchState.location ? "text-foreground" : "text-muted-foreground"}`}
+        {/* Location text */}
+        <div className="flex-1">
+          <span
+            className={`text-sm font-medium ${searchState.location ? "text-foreground" : "text-muted-foreground"}`}
           >
-            {searchState.location || "Anywhere"}
-          </Button>
-
-          <span className="w-px h-4 bg-border" aria-hidden="true" />
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleExpand("date")}
-            className={`h-auto py-1 px-2 font-medium hover:bg-transparent hover:text-primary ${searchState.date ? "text-foreground" : "text-muted-foreground"}`}
-          >
-            {searchState.date || "Any date"}
-          </Button>
-
-          <span className="w-px h-4 bg-border" aria-hidden="true" />
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleExpand("duration")}
-            className={`h-auto py-1 px-2 font-medium hover:bg-transparent hover:text-primary ${searchState.duration ? "text-foreground" : "text-muted-foreground"}`}
-          >
-            {searchState.duration || "Any duration"}
-          </Button>
+            {searchState.location || "Where do you need parking?"}
+          </span>
         </div>
 
-        {/* Search button */}
-        <Button
-          size="icon"
-          onClick={handleSearch}
-          className={isScrolled ? "h-7 w-7 -mr-1.5" : "h-8 w-8 -mr-2"}
-          aria-label="Search"
+        {/* Search trigger */}
+        <span
+          role="none"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSearch();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.stopPropagation();
+              handleSearch();
+            }
+          }}
+          className={`inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0 ${isScrolled ? "h-8 w-8 -mr-1" : "h-10 w-10 -mr-2"}`}
         >
           <Search size={isScrolled ? 14 : 16} />
-        </Button>
-      </search>
+        </span>
+      </button>
 
       {/* Expanded dropdown */}
       {isExpanded && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-50 bg-background border border-border rounded-3xl shadow-xl overflow-hidden w-[500px] animate-in fade-in zoom-in-95 duration-200">
-          {/* Tab headers */}
-          <div className="flex border-b border-border">
-            <SearchTabButton
-              icon={<MapPin size={16} />}
-              label="Location"
-              isActive={activeTab === "location"}
-              onClick={() => setActiveTab("location")}
-              hasValue={!!searchState.location}
+        <div
+          role="dialog"
+          aria-label="Search for parking location"
+          className="absolute top-0 left-0 z-50 bg-background border border-border rounded-3xl shadow-xl overflow-hidden w-full animate-in fade-in zoom-in-95 duration-200"
+        >
+          <div className="p-4 space-y-3">
+            <LocationAutocomplete
+              ref={inputRef}
+              label="Where do you need parking?"
+              placeholder="Enter address, city, or venue"
+              value={searchState.location}
+              onChange={(value) =>
+                setSearchState((s) => ({ ...s, location: value }))
+              }
+              onSelect={handleLocationSelect}
+              variant="accent"
             />
-            <SearchTabButton
-              icon={<Calendar size={16} />}
-              label="Date"
-              isActive={activeTab === "date"}
-              onClick={() => setActiveTab("date")}
-              hasValue={!!searchState.date}
-            />
-            <SearchTabButton
-              icon={<Clock size={16} />}
-              label="Duration"
-              isActive={activeTab === "duration"}
-              onClick={() => setActiveTab("duration")}
-              hasValue={!!searchState.duration}
-            />
-          </div>
-
-          {/* Tab content */}
-          <div className="p-4">
-            {activeTab === "location" && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-left-2 duration-200">
-                <Input
-                  ref={(el) => {
-                    inputRefs.current.location = el;
-                  }}
-                  label="Where do you need parking?"
-                  placeholder="Enter address, city, or venue"
-                  value={searchState.location}
-                  onChange={(e) =>
-                    setSearchState((s) => ({ ...s, location: e.target.value }))
-                  }
-                  onKeyDown={handleKeyDown}
-                  startIcon={<MapPin size={18} />}
-                  variant="accent"
-                />
-              </div>
-            )}
-
-            {activeTab === "date" && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-left-2 duration-200">
-                <Input
-                  ref={(el) => {
-                    inputRefs.current.date = el;
-                  }}
-                  label="When do you need it?"
-                  placeholder="Today, Tomorrow, or specific date"
-                  value={searchState.date}
-                  onChange={(e) =>
-                    setSearchState((s) => ({ ...s, date: e.target.value }))
-                  }
-                  onKeyDown={handleKeyDown}
-                  startIcon={<Calendar size={18} />}
-                  variant="accent"
-                />
-                <div className="flex gap-2">
-                  {["Today", "Tomorrow", "This weekend"].map((option) => (
-                    <Button
-                      key={option}
-                      variant={
-                        searchState.date === option ? "primary" : "secondary"
-                      }
-                      size="sm"
-                      onClick={() =>
-                        setSearchState((s) => ({ ...s, date: option }))
-                      }
-                    >
-                      {option}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeTab === "duration" && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-left-2 duration-200">
-                <Input
-                  ref={(el) => {
-                    inputRefs.current.duration = el;
-                  }}
-                  label="How long do you need it?"
-                  placeholder="e.g., 2 hours, All day"
-                  value={searchState.duration}
-                  onChange={(e) =>
-                    setSearchState((s) => ({ ...s, duration: e.target.value }))
-                  }
-                  onKeyDown={handleKeyDown}
-                  startIcon={<Clock size={18} />}
-                  variant="accent"
-                />
-                <div className="flex gap-2 flex-wrap">
-                  {["1 hour", "2 hours", "4 hours", "All day", "Overnight"].map(
-                    (option) => (
-                      <Button
-                        key={option}
-                        variant={
-                          searchState.duration === option
-                            ? "primary"
-                            : "secondary"
-                        }
-                        size="sm"
-                        onClick={() =>
-                          setSearchState((s) => ({ ...s, duration: option }))
-                        }
-                      >
-                        {option}
-                      </Button>
-                    ),
-                  )}
-                </div>
-              </div>
-            )}
+            <div className="flex gap-2">
+              <Button
+                variant={
+                  searchState.location === "Current location"
+                    ? "primary"
+                    : "secondary"
+                }
+                size="sm"
+                onClick={handleNearbyClick}
+                loading={isLocating}
+                startIcon={<Navigation size={14} />}
+              >
+                Nearby
+              </Button>
+            </div>
           </div>
 
           {/* Search button */}
@@ -298,38 +252,5 @@ export function ExpandableSearch({
         </div>
       )}
     </div>
-  );
-}
-
-interface SearchTabButtonProps {
-  icon: React.ReactNode;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-  hasValue: boolean;
-}
-
-function SearchTabButton({
-  icon,
-  label,
-  isActive,
-  onClick,
-  hasValue,
-}: SearchTabButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition-colors relative ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
-    >
-      <span className={hasValue ? "text-primary" : ""}>{icon}</span>
-      <span>{label}</span>
-      {hasValue && (
-        <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-primary rounded-full" />
-      )}
-      {isActive && (
-        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary animate-in fade-in slide-in-from-bottom-1 duration-200" />
-      )}
-    </button>
   );
 }
