@@ -10,7 +10,9 @@
       "Bash(pnpm turbo build:*)",
       "Bash(dir /s \"C:\\\\Users\\\\Brandon\\\\m\\\\dev\\\\personal\\\\parking\\\\apps\\\\web\\\\src\\\\app\")",
       "Bash(xargs ls:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm format:*)"
     ]
   }
 }
