@@ -8,7 +8,7 @@ export function Logo() {
         <span className="text-primary-foreground font-bold text-lg">P</span>
       </div>
       <Typography variant="h4" className="hidden sm:block">
-        ParkShare
+        parkkit
       </Typography>
     </Link>
   );

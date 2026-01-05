@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 import { Typography } from "../ui/typography";
 import { ExpandableSearch } from "./expandable-search";
 import { Logo } from "./logo";
@@ -12,7 +13,7 @@ import { MobileSearch } from "./mobile-search";
 import { UserMenu } from "./user-menu";
 
 export function Navbar() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { openAuth } = useAuth();
   const { isScrolled } = useScroll({ threshold: 50 });
 
@@ -24,19 +25,16 @@ export function Navbar() {
         <div
           className={`flex items-center justify-between transition-all duration-300 ease-out ${isScrolled ? "h-14" : "h-20"}`}
         >
-          {/* Left - Logo */}
           <div
             className={`transition-transform duration-300 ease-out ${isScrolled ? "scale-90" : "scale-100"}`}
           >
             <Logo />
           </div>
 
-          {/* Center - Expandable Search */}
           <div className="hidden md:flex flex-1 justify-center">
             <ExpandableSearch isScrolled={isScrolled} />
           </div>
 
-          {/* Right - Actions */}
           <div className="flex items-center gap-2">
             <Link href="/host">
               <Button
@@ -50,7 +48,11 @@ export function Navbar() {
               </Button>
             </Link>
 
-            {session ? (
+            {status === "loading" ? (
+              <div className="w-9 h-9 flex items-center justify-center">
+                <Spinner size="md" />
+              </div>
+            ) : session ? (
               <UserMenu user={session.user} />
             ) : (
               <Button

@@ -1,12 +1,17 @@
 "use client";
 
-import { Menu, User } from "lucide-react";
+import { Menu as MenuIcon, User } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
-import { Button } from "../ui/button";
-import { Typography } from "../ui/typography";
+import {
+  Menu,
+  MenuContent,
+  MenuGroup,
+  MenuHeader,
+  MenuItem,
+  MenuSeparator,
+  MenuTrigger,
+} from "../ui/menu";
 
 interface UserMenuProps {
   user: {
@@ -17,28 +22,10 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user }: UserMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
-    <div className="relative" ref={menuRef}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 border border-border rounded-full py-1.5 pl-3 pr-1.5 hover:shadow-md transition-shadow"
-      >
-        <Menu size={16} className="text-foreground" />
+    <Menu>
+      <MenuTrigger className="flex items-center gap-3 border border-border rounded-full py-1.5 pl-3 pr-1.5 hover:shadow-md transition-shadow">
+        <MenuIcon size={16} className="text-foreground" />
         {user.image ? (
           <Image
             src={user.image}
@@ -52,58 +39,54 @@ export function UserMenu({ user }: UserMenuProps) {
             <User size={16} className="text-background" />
           </div>
         )}
-      </button>
+      </MenuTrigger>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-background rounded-lg shadow-lg border border-border py-1 z-50">
-          <div className="px-4 py-3 border-b border-border">
-            <Typography variant="small" className="font-medium">
-              {user.name}
-            </Typography>
-            <Typography variant="muted" className="text-xs">
-              {user.email}
-            </Typography>
+      <MenuContent>
+        <MenuHeader>
+          <div className="flex items-center gap-3">
+            {user.image ? (
+              <Image
+                src={user.image}
+                alt={user.name || "User"}
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                <User size={18} className="text-primary-foreground" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{user.name}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user.email}
+              </p>
+            </div>
           </div>
+        </MenuHeader>
 
-          <div className="py-1">
-            <MenuLink href="/dashboard">Dashboard</MenuLink>
-            <MenuLink href="/dashboard/spots">My spots</MenuLink>
-            <MenuLink href="/dashboard/bookings">My bookings</MenuLink>
-          </div>
+        <MenuGroup>
+          <MenuItem href="/dashboard">Dashboard</MenuItem>
+          <MenuItem href="/dashboard/spots">My spots</MenuItem>
+          <MenuItem href="/dashboard/bookings">My bookings</MenuItem>
+        </MenuGroup>
 
-          <div className="py-1 border-t border-border">
-            <MenuLink href="/host">List your spot</MenuLink>
-            <MenuLink href="/settings">Settings</MenuLink>
-          </div>
+        <MenuSeparator />
 
-          <div className="py-1 border-t border-border">
-            <Button
-              variant="ghost"
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="w-full justify-start h-auto py-2 px-4 rounded-none text-sm font-normal"
-            >
-              Log out
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+        <MenuGroup>
+          <MenuItem href="/host">List your spot</MenuItem>
+          <MenuItem href="/settings">Settings</MenuItem>
+        </MenuGroup>
 
-function MenuLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="block px-4 py-2 text-sm hover:bg-accent transition-colors"
-    >
-      {children}
-    </Link>
+        <MenuSeparator />
+
+        <MenuGroup>
+          <MenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+            Log out
+          </MenuItem>
+        </MenuGroup>
+      </MenuContent>
+    </Menu>
   );
 }
