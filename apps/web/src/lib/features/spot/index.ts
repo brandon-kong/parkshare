@@ -39,4 +39,8 @@ export const spotsClientApi = {
       formData,
     );
   },
+  publish: (spotId: string) =>
+    clientApi.post<Spot>(`/api/v1/spots/${spotId}/publish`, {}),
+  unpublish: (spotId: string) =>
+    clientApi.post<Spot>(`/api/v1/spots/${spotId}/unpublish`, {}),
 };

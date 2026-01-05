@@ -26,6 +26,8 @@ func Routes() chi.Router {
 	router.Put("/{id}", Update)
 	router.Delete("/{id}", Delete)
 	router.Post("/{id}/photos", UploadPhotos)
+	router.Post("/{id}/publish", Publish)
+	router.Post("/{id}/unpublish", Unpublish)
 
 	return router
 }
@@ -252,6 +254,58 @@ func UploadPhotos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.WriteJSON(w, http.StatusCreated, uploadedPhotos)
+}
+
+func Publish(w http.ResponseWriter, r *http.Request) {
+	claims := auth.GetUserFromContext(r.Context())
+	id := chi.URLParam(r, "id")
+
+	var spot models.Spot
+	if err := database.DB.First(&spot, "id = ?", id).Error; err != nil {
+		util.WriteError(w, http.StatusNotFound, "Spot not found")
+		return
+	}
+
+	if spot.HostID != claims.UserID {
+		util.WriteError(w, http.StatusForbidden, "You don't own this spot")
+		return
+	}
+
+	if spot.Status == models.SpotStatusDeleted {
+		util.WriteError(w, http.StatusBadRequest, "Cannot publish a deleted spot")
+		return
+	}
+
+	database.DB.Model(&spot).Update("status", models.SpotStatusActive)
+	spot.Status = models.SpotStatusActive
+
+	util.WriteJSON(w, http.StatusOK, spot)
+}
+
+func Unpublish(w http.ResponseWriter, r *http.Request) {
+	claims := auth.GetUserFromContext(r.Context())
+	id := chi.URLParam(r, "id")
+
+	var spot models.Spot
+	if err := database.DB.First(&spot, "id = ?", id).Error; err != nil {
+		util.WriteError(w, http.StatusNotFound, "Spot not found")
+		return
+	}
+
+	if spot.HostID != claims.UserID {
+		util.WriteError(w, http.StatusForbidden, "You don't own this spot")
+		return
+	}
+
+	if spot.Status == models.SpotStatusDeleted {
+		util.WriteError(w, http.StatusBadRequest, "Cannot unpublish a deleted spot")
+		return
+	}
+
+	database.DB.Model(&spot).Update("status", models.SpotStatusPaused)
+	spot.Status = models.SpotStatusPaused
+
+	util.WriteJSON(w, http.StatusOK, spot)
 }
 
 // Request types
