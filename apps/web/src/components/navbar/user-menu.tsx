@@ -1,10 +1,11 @@
 "use client";
 
-import { ChevronDown, User } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "../ui/button";
 import { Typography } from "../ui/typography";
 
 interface UserMenuProps {
@@ -35,22 +36,22 @@ export function UserMenu({ user }: UserMenuProps) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 h-9 px-3 rounded-control hover:bg-accent transition-colors"
+        className="flex items-center gap-3 border border-border rounded-full py-1.5 pl-3 pr-1.5 hover:shadow-md transition-shadow"
       >
+        <Menu size={16} className="text-foreground" />
         {user.image ? (
           <Image
             src={user.image}
             alt={user.name || "User"}
-            width={28}
-            height={28}
+            width={32}
+            height={32}
             className="rounded-full"
           />
         ) : (
-          <div className="w-7 h-7 bg-muted rounded-full flex items-center justify-center">
-            <User size={14} className="text-muted-foreground" />
+          <div className="w-8 h-8 bg-muted-foreground rounded-full flex items-center justify-center">
+            <User size={16} className="text-background" />
           </div>
         )}
-        <ChevronDown size={14} className="text-muted-foreground" />
       </button>
 
       {isOpen && (
@@ -76,13 +77,13 @@ export function UserMenu({ user }: UserMenuProps) {
           </div>
 
           <div className="py-1 border-t border-border">
-            <button
-              type="button"
+            <Button
+              variant="ghost"
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-accent transition-colors"
+              className="w-full justify-start h-auto py-2 px-4 rounded-none text-sm font-normal"
             >
               Log out
-            </button>
+            </Button>
           </div>
         </div>
       )}
