@@ -7,7 +7,10 @@
       "Bash(pnpm test:run:*)",
       "Bash(pnpm turbo test:*)",
       "Bash(rm:*)",
-      "Bash(pnpm turbo build:*)"
+      "Bash(pnpm turbo build:*)",
+      "Bash(dir /s \"C:\\\\Users\\\\Brandon\\\\m\\\\dev\\\\personal\\\\parking\\\\apps\\\\web\\\\src\\\\app\")",
+      "Bash(xargs ls:*)",
+      "Bash(xargs cat:*)"
     ]
   }
 }
