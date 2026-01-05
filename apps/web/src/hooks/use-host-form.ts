@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { PhotoFile } from "@/components/host/steps/photos-step";
+import { spotsClientApi } from "@/lib/features/spot";
 import type { SpotType, VehicleSize } from "@/lib/features/spot/types";
 
 export const STEPS = [
@@ -212,17 +213,35 @@ export function useHostForm() {
     setIsSubmitting(true);
 
     try {
-      // TODO: Implement actual API call
-      // const spot = await spotsClientApi.create({
-      //   title: formData.title,
-      //   description: formData.description,
-      //   ...
-      // });
+      // Create the spot
+      const spot = await spotsClientApi.create({
+        title: formData.title,
+        description: formData.description || undefined,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state || undefined,
+        postal_code: formData.postalCode || undefined,
+        country: formData.country || undefined,
+        latitude: formData.latitude as number,
+        longitude: formData.longitude as number,
+        spot_type: formData.spotType as SpotType,
+        vehicle_size: formData.vehicleSize as VehicleSize,
+        is_covered: formData.isCovered,
+        has_ev_charging: formData.hasEvCharging,
+        has_security: formData.hasSecurity,
+        access_instructions: formData.accessInstructions || undefined,
+        hourly_rate: formData.hourlyRate ?? undefined,
+        daily_rate: formData.dailyRate ?? undefined,
+        monthly_rate: formData.monthlyRate ?? undefined,
+      });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Upload photos if any
+      if (formData.photos.length > 0) {
+        const files = formData.photos.map((p) => p.file);
+        await spotsClientApi.uploadPhotos(spot.id, files);
+      }
 
-      return { success: true, spotId: "new-spot-id" };
+      return { success: true, spotId: spot.id };
     } catch (error) {
       return {
         success: false,

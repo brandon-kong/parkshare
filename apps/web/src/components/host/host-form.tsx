@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useHostForm } from "@/hooks/use-host-form";
 import { HostFormLayout } from "./host-form-layout";
 import { BasicInfoStep } from "./steps/basic-info-step";
@@ -12,6 +13,7 @@ import { ReviewStep } from "./steps/review-step";
 
 export function HostForm() {
   const router = useRouter();
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     currentStep,
     currentStepIndex,
@@ -31,10 +33,12 @@ export function HostForm() {
 
   const handleNext = async () => {
     if (isLastStep) {
+      setSubmitError(null);
       const result = await submit();
-      if (result.success) {
-        // TODO: Navigate to success page or the new listing
-        router.push("/dashboard");
+      if (result.success && result.spotId) {
+        router.push(`/spots/${result.spotId}`);
+      } else if (result.error) {
+        setSubmitError(result.error);
       }
     } else {
       goNext();
@@ -164,6 +168,7 @@ export function HostForm() {
       isLastStep={isLastStep}
       isSubmitting={isSubmitting}
       canProceed={canProceed()}
+      error={submitError}
     >
       {renderStep()}
     </HostFormLayout>

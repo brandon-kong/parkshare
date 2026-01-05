@@ -44,6 +44,10 @@ func main() {
 
 	router.Mount("/health", health.Routes())
 
+	// Serve uploaded files
+	fileServer := http.FileServer(http.Dir("uploads"))
+	router.Handle("/uploads/*", http.StripPrefix("/uploads", fileServer))
+
 	router.Route("/api/v1/auth", func(r chi.Router) {
 		r.Use(httprate.LimitByIP(10, time.Minute))
 		r.Mount("/", auth.Routes())

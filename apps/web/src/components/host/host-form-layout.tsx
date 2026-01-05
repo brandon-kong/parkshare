@@ -11,6 +11,7 @@ interface HostFormLayoutProps {
   isLastStep: boolean;
   isSubmitting: boolean;
   canProceed: boolean;
+  error?: string | null;
 }
 
 export function HostFormLayout({
@@ -23,6 +24,7 @@ export function HostFormLayout({
   isLastStep,
   isSubmitting,
   canProceed,
+  error,
 }: HostFormLayoutProps) {
   return (
     <div className="flex-1 flex flex-col min-h-0">
@@ -33,6 +35,11 @@ export function HostFormLayout({
 
       {/* Fixed bottom section */}
       <div className="shrink-0 border-t border-border bg-background">
+        {error && (
+          <div className="bg-destructive/10 border-b border-destructive/20 px-4 py-3">
+            <p className="text-sm text-destructive text-center">{error}</p>
+          </div>
+        )}
         <HostFormProgress current={currentStep} total={totalSteps} />
         <HostFormNavigation
           onBack={onBack}

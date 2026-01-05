@@ -2,17 +2,20 @@ package models
 
 import (
     "database/sql/driver"
+    "encoding/hex"
+    "fmt"
 
     "github.com/twpayne/go-geom"
     "github.com/twpayne/go-geom/encoding/ewkb"
 )
 
 type GeoPoint struct {
-    geom.Point
+    lng float64
+    lat float64
 }
 
 func NewGeoPoint(lng, lat float64) GeoPoint {
-    return GeoPoint{*geom.NewPoint(geom.XY).MustSetCoords(geom.Coord{lng, lat}).SetSRID(4326)}
+    return GeoPoint{lng: lng, lat: lat}
 }
 
 func (g *GeoPoint) Scan(input interface{}) error {
@@ -20,7 +23,21 @@ func (g *GeoPoint) Scan(input interface{}) error {
         return nil
     }
 
-    gt, err := ewkb.Unmarshal(input.([]byte))
+    var data []byte
+    switch v := input.(type) {
+    case []byte:
+        data = v
+    case string:
+        var err error
+        data, err = hex.DecodeString(v)
+        if err != nil {
+            return err
+        }
+    default:
+        return fmt.Errorf("unsupported type: %T", input)
+    }
+
+    gt, err := ewkb.Unmarshal(data)
     if err != nil {
         return err
     }
@@ -30,20 +47,21 @@ func (g *GeoPoint) Scan(input interface{}) error {
         return nil
     }
 
-    g.Point = *point
+    coords := point.Coords()
+    g.lng = coords.X()
+    g.lat = coords.Y()
     return nil
 }
 
 func (g GeoPoint) Value() (driver.Value, error) {
-    point := g.Point
-    point.SetSRID(4326)
-    return ewkb.Marshal(&point, ewkb.NDR)
+    // Use WKT format with SRID which PostGIS understands natively
+    return fmt.Sprintf("SRID=4326;POINT(%f %f)", g.lng, g.lat), nil
 }
 
 func (g GeoPoint) Lat() float64 {
-    return g.Point.Y()
+    return g.lat
 }
 
 func (g GeoPoint) Lng() float64 {
-    return g.Point.X()
+    return g.lng
 }

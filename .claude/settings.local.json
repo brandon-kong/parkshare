@@ -12,7 +12,11 @@
       "Bash(xargs ls:*)",
       "Bash(xargs cat:*)",
       "Bash(pnpm lint:*)",
-      "Bash(pnpm format:*)"
+      "Bash(pnpm format:*)",
+      "Bash(find:*)",
+      "Bash(go build:*)",
+      "Bash(pnpm run lint)",
+      "Bash(npx biome:*)"
     ]
   }
 }

@@ -16,10 +16,6 @@ async function refreshAccessToken(refreshToken: string) {
   return res.json();
 }
 
-if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-  throw new Error("Missing required Google OAuth environment variables");
-}
-
 const handler = NextAuth({
   providers: [
     Google({

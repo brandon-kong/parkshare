@@ -57,3 +57,11 @@ export interface UpdateSpotInput {
   daily_rate?: number;
   monthly_rate?: number;
 }
+
+export interface SpotPhoto {
+  id: string;
+  spot_id: string;
+  url: string;
+  display_order: number;
+  created_at: string;
+}
