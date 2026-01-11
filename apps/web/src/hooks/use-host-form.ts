@@ -230,9 +230,18 @@ export function useHostForm() {
         has_ev_charging: formData.hasEvCharging,
         has_security: formData.hasSecurity,
         access_instructions: formData.accessInstructions || undefined,
-        hourly_rate: formData.hourlyRate ?? undefined,
-        daily_rate: formData.dailyRate ?? undefined,
-        monthly_rate: formData.monthlyRate ?? undefined,
+        hourly_rate:
+          formData.hourlyRate != null
+            ? Math.round(formData.hourlyRate * 100)
+            : undefined,
+        daily_rate:
+          formData.dailyRate != null
+            ? Math.round(formData.dailyRate * 100)
+            : undefined,
+        monthly_rate:
+          formData.monthlyRate != null
+            ? Math.round(formData.monthlyRate * 100)
+            : undefined,
       });
 
       // Upload photos if any

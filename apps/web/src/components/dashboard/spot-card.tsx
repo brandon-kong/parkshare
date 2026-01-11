@@ -113,19 +113,19 @@ export function SpotCard({ spot }: SpotCardProps) {
         {spot.hourly_rate !== undefined && spot.hourly_rate !== null && (
           <div>
             <span className="text-muted-foreground">Hourly:</span> $
-            {spot.hourly_rate}
+            {(spot.hourly_rate / 100).toFixed(2)}
           </div>
         )}
         {spot.daily_rate !== undefined && spot.daily_rate !== null && (
           <div>
             <span className="text-muted-foreground">Daily:</span> $
-            {spot.daily_rate}
+            {(spot.daily_rate / 100).toFixed(2)}
           </div>
         )}
         {spot.monthly_rate !== undefined && spot.monthly_rate !== null && (
           <div>
             <span className="text-muted-foreground">Monthly:</span> $
-            {spot.monthly_rate}
+            {(spot.monthly_rate / 100).toFixed(2)}
           </div>
         )}
       </div>

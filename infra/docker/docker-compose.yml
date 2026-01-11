@@ -2,6 +2,7 @@ name: 'Parkshare'
 
 services:
   postgres:
+    platform: linux/x86_64
     image: postgis/postgis:18-3.6
     container_name: parkshare-postgres
     restart: always
